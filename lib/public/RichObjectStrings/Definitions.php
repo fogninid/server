@@ -159,6 +159,12 @@ class Definitions {
 					'required' => false,
 					'description' => 'A link to the page displaying the calendar',
 					'example' => 'http://localhost/index.php/apps/calendar/dayGridMonth/2020-01-20/edit/sidebar/base64string/1579046400'
+				],
+				'firstoccurrence' => [
+					'since' => '21.0.0',
+					'required' => false,
+					'description' => 'Timestamp of the first occurrence of the event',
+					'example' => '1604227294'
 				]
 			],
 		],

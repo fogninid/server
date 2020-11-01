@@ -87,7 +87,6 @@ class Event extends Base {
 			'type' => 'calendar-event',
 			'id' => $eventData['id'],
 			'name' => $eventData['name'],
-
 		];
 		if (isset($eventData['link']) && is_array($eventData['link']) && $this->appManager->isEnabledForUser('calendar')) {
 			try {
@@ -214,6 +213,9 @@ class Event extends Base {
 		$parameter = $this->generateObjectParameter($eventData);
 		if (!empty($eventData['classified'])) {
 			$parameter['name'] = $this->l->t('Busy');
+		}
+		if (!empty($eventData['firstoccurrence'])) {
+			$parameter['firstoccurrence'] = $eventData['firstoccurrence'];
 		}
 		return $parameter;
 	}

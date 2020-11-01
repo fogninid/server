@@ -418,7 +418,7 @@ class Backend {
 		}
 
 		$classification = $objectData['classification'] ?? CalDavBackend::CLASSIFICATION_PUBLIC;
-		$object = $this->getObjectNameAndType($objectData);
+		$object = $this->getEventObjectData($objectData);
 		$action = $action . '_' . $object['type'];
 
 		if ($object['type'] === 'todo' && strpos($action, Event::SUBJECT_OBJECT_UPDATE) === 0 && $object['status'] === 'COMPLETED') {
@@ -454,6 +454,7 @@ class Backend {
 					'id' => $object['id'],
 					'name' => $classification === CalDavBackend::CLASSIFICATION_CONFIDENTIAL && $user !== $owner ? 'Busy' : $object['name'],
 					'classified' => $classification === CalDavBackend::CLASSIFICATION_CONFIDENTIAL && $user !== $owner,
+					'firstoccurrence' => $object['firstoccurrence'],
 				],
 			];
 
@@ -478,7 +479,7 @@ class Backend {
 	 * @param array $objectData
 	 * @return string[]|bool
 	 */
-	protected function getObjectNameAndType(array $objectData) {
+	protected function getEventObjectData(array $objectData) {
 		$vObject = Reader::read($objectData['calendardata']);
 		$component = $componentType = null;
 		foreach ($vObject->getComponents() as $component) {
@@ -492,9 +493,17 @@ class Backend {
 			// Calendar objects must have a VEVENT or VTODO component
 			return false;
 		}
+		$firstOccurrence = null;
+		if ($componentType === 'VEVENT' && $component->DTSTART) {
+			$firstOccurrence = $component->DTSTART->getDateTime()->getTimestamp();
+		}
 
 		if ($componentType === 'VEVENT') {
-			return ['id' => (string) $component->UID, 'name' => (string) $component->SUMMARY, 'type' => 'event'];
+			$rv = ['id' => (string) $component->UID, 'name' => (string) $component->SUMMARY, 'type' => 'event'];
+			if (!empty($firstOccurrence)) {
+				$rv['firstoccurrence'] = (string) $firstOccurrence;
+			}
+			return $rv;
 		}
 		return ['id' => (string) $component->UID, 'name' => (string) $component->SUMMARY, 'type' => 'todo', 'status' => (string) $component->STATUS];
 	}
